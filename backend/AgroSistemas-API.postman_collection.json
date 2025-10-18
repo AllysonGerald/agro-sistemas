@@ -1,0 +1,1657 @@
+{
+	"info": {
+		"_postman_id": "agro-sistemas-api-v2",
+		"name": "Agro Sistemas API - Brasil",
+		"description": "API completa para sistema de gestão agropecuária para todo o território brasileiro\n\n✅ Timezone: America/Fortaleza (UTC-3)\n✅ Localização: pt_BR\n✅ Docker: PHP 8.4 + PostgreSQL 15 + Redis 7\n✅ Laravel 12 + Sanctum Auth\n✅ Documentação disponível em: http://localhost:8080/docs/api\n\n🆕 NOVAS FUNCIONALIDADES:\n• Sistema de Atividades Recentes com auto-refresh\n• Relatórios completos (PDF, Excel, CSV) para todos os módulos\n• Busca com autocomplete para propriedades\n• Dashboard com estatísticas em tempo real\n• 8 tipos de relatórios especializados\n• Validação de dados e prevenção de relatórios vazios\n• Interface moderna e responsiva\n• Sistema de cache otimizado",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health & System Tests",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/teste/health",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "teste", "health"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Database Connection Test",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/teste/database",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "teste", "database"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.access_token) {",
+									"        pm.environment.set('auth_token', response.data.access_token);",
+									"        console.log('✅ Token salvo:', response.data.access_token.substring(0, 20) + '...');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"João Silva\",\n    \"email\": \"joao@agrosistemas.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth", "register"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.access_token) {",
+									"        pm.environment.set('auth_token', response.data.access_token);",
+									"        console.log('✅ Login realizado! Token atualizado');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"joao@agrosistemas.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth", "login"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/user",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth", "user"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/logout",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth", "logout"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Produtores Rurais",
+			"item": [
+				{
+					"name": "List Produtores",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/produtores-rurais?per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "produtores-rurais"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Produtor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.id) {",
+									"        pm.environment.set('produtor_id', response.data.id);",
+									"        console.log('✅ Produtor criado com ID:', response.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"João Silva Santos\",\n    \"cpf_cnpj\": \"123.456.789-00\",\n    \"telefone\": \"(11) 99999-9999\",\n    \"email\": \"joao.silva@fazenda.com\",\n    \"endereco\": \"Zona Rural, São Paulo/SP\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/produtores-rurais",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "produtores-rurais"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Produtor by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/produtores-rurais/{{produtor_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "produtores-rurais", "{{produtor_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Produtores",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/produtores-rurais?search=Silva",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "produtores-rurais"],
+							"query": [
+								{
+									"key": "search",
+									"value": "Silva"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Produtor",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"João Silva Santos Atualizado\",\n    \"cpf_cnpj\": \"123.456.789-00\",\n    \"telefone\": \"(85) 99999-8888\",\n    \"email\": \"joao.silva.atualizado@fazenda.com\",\n    \"endereco\": \"Zona Rural, Fortaleza/CE\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/produtores-rurais/{{produtor_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "produtores-rurais", "{{produtor_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Produtor",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/produtores-rurais/{{produtor_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "produtores-rurais", "{{produtor_id}}"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Propriedades",
+			"item": [
+				{
+					"name": "List Propriedades",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/propriedades?per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "propriedades"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Propriedade",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.id) {",
+									"        pm.environment.set('propriedade_id', response.data.id);",
+									"        console.log('✅ Propriedade criada com ID:', response.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"Fazenda Santa Rita\",\n    \"endereco\": \"Zona Rural, Sobral/CE, Estrada CE-187, Km 45\",\n    \"area_total\": 850.75,\n    \"municipio\": \"Sobral\",\n    \"uf\": \"CE\",\n    \"inscricao_estadual\": \"123456789\",\n    \"produtor_id\": \"{{produtor_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/propriedades",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "propriedades"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Propriedade by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/propriedades/{{propriedade_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "propriedades", "{{propriedade_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Propriedades",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/propriedades?search=Fazenda",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "propriedades"],
+							"query": [
+								{
+									"key": "search",
+									"value": "Fazenda"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Propriedade",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"Fazenda Santa Rita Atualizada\",\n    \"endereco\": \"Zona Rural, Fortaleza/CE, Estrada CE-040, Km 12\",\n    \"area_total\": 950.25,\n    \"municipio\": \"Fortaleza\",\n    \"uf\": \"CE\",\n    \"inscricao_estadual\": \"987654321\",\n    \"produtor_id\": \"{{produtor_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/propriedades/{{propriedade_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "propriedades", "{{propriedade_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Propriedade",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/propriedades/{{propriedade_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "propriedades", "{{propriedade_id}}"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Rebanhos",
+			"item": [
+				{
+					"name": "List Rebanhos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/rebanhos?per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "rebanhos"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Rebanho",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.id) {",
+									"        pm.environment.set('rebanho_id', response.data.id);",
+									"        console.log('✅ Rebanho criado com ID:', response.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"especie\": \"bovinos\",\n    \"raca\": \"Nelore\",\n    \"quantidade\": 120,\n    \"finalidade\": \"corte\",\n    \"propriedade_id\": \"{{propriedade_id}}\",\n    \"observacoes\": \"Rebanho principal da fazenda\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/rebanhos",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "rebanhos"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Rebanho by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/rebanhos/{{rebanho_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "rebanhos", "{{rebanho_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Rebanhos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/rebanhos?search=bovinos",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "rebanhos"],
+							"query": [
+								{
+									"key": "search",
+									"value": "bovinos"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Rebanho",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"especie\": \"bovinos\",\n    \"raca\": \"Angus\",\n    \"quantidade\": 150,\n    \"finalidade\": \"leite\",\n    \"propriedade_id\": \"{{propriedade_id}}\",\n    \"observacoes\": \"Rebanho atualizado para produção de leite\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/rebanhos/{{rebanho_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "rebanhos", "{{rebanho_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Rebanho",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/rebanhos/{{rebanho_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "rebanhos", "{{rebanho_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Estatísticas por Espécie",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/rebanhos/estatisticas-especies",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "rebanhos", "estatisticas-especies"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Unidades de Produção",
+			"item": [
+				{
+					"name": "List Unidades",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/unidades-producao?per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "unidades-producao"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Unidade",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.id) {",
+									"        pm.environment.set('unidade_id', response.data.id);",
+									"        console.log('✅ Unidade criada com ID:', response.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome_cultura\": \"soja\",\n    \"area_total_ha\": 150.5,\n    \"data_plantio\": \"2025-03-15\",\n    \"data_colheita_prevista\": \"2025-08-20\",\n    \"coordenadas_geograficas\": {\n        \"latitude\": -3.7319,\n        \"longitude\": -38.5267\n    },\n    \"propriedade_id\": \"{{propriedade_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/unidades-producao",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "unidades-producao"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Unidade by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/unidades-producao/{{unidade_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "unidades-producao", "{{unidade_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Unidades",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/unidades-producao?search=soja",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "unidades-producao"],
+							"query": [
+								{
+									"key": "search",
+									"value": "soja"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Unidade",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome_cultura\": \"milho\",\n    \"area_total_ha\": 200.0,\n    \"data_plantio\": \"2025-04-01\",\n    \"data_colheita_prevista\": \"2025-09-15\",\n    \"coordenadas_geograficas\": {\n        \"latitude\": -3.7320,\n        \"longitude\": -38.5268\n    },\n    \"propriedade_id\": \"{{propriedade_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/unidades-producao/{{unidade_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "unidades-producao", "{{unidade_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Unidade",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/unidades-producao/{{unidade_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "unidades-producao", "{{unidade_id}}"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dashboard",
+			"item": [
+				{
+					"name": "Dashboard Completo",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/dashboard",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "dashboard"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Estatísticas",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/dashboard/estatisticas",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "dashboard", "estatisticas"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Atividades Recentes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/dashboard/atividades",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "dashboard", "atividades"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Relatórios",
+			"item": [
+				{
+					"name": "Produtores Rurais",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/relatorios/produtores-rurais",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "relatorios", "produtores-rurais"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Propriedades Rurais",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/relatorios/propriedades-rurais",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "relatorios", "propriedades-rurais"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unidades de Produção",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/relatorios/unidades-producao",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "relatorios", "unidades-producao"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Rebanhos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/relatorios/rebanhos",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "relatorios", "rebanhos"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Propriedades por Município",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/relatorios/propriedades-municipio",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "relatorios", "propriedades-municipio"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Animais por Espécie",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/relatorios/animais-especie",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "relatorios", "animais-especie"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Hectares por Nome",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/relatorios/hectares-cultura?search=Fazenda",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "relatorios", "hectares-cultura"],
+							"query": [
+								{
+									"key": "search",
+									"value": "Fazenda"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Rebanhos por Produtor",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/relatorios/rebanhos-produtor?produtor_id={{produtor_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "relatorios", "rebanhos-produtor"],
+							"query": [
+								{
+									"key": "produtor_id",
+									"value": "{{produtor_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar Propriedades (Autocomplete)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/relatorios/propriedades?search=Fazenda&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "relatorios", "propriedades"],
+							"query": [
+								{
+									"key": "search",
+									"value": "Fazenda"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Exportação de Relatórios",
+			"item": [
+				{
+					"name": "Exportar Produtores Rurais (PDF)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/pdf"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/relatorios/exportar/produtores-rurais?formato=pdf",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "relatorios", "exportar", "produtores-rurais"],
+							"query": [
+								{
+									"key": "formato",
+									"value": "pdf"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Exportar Produtores Rurais (Excel)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/relatorios/exportar/produtores-rurais?formato=excel",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "relatorios", "exportar", "produtores-rurais"],
+							"query": [
+								{
+									"key": "formato",
+									"value": "excel"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Exportar Produtores Rurais (CSV)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "text/csv"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/relatorios/exportar/produtores-rurais?formato=csv",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "relatorios", "exportar", "produtores-rurais"],
+							"query": [
+								{
+									"key": "formato",
+									"value": "csv"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Exportar Propriedades Rurais (PDF)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/pdf"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/relatorios/exportar/propriedades-rurais?formato=pdf",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "relatorios", "exportar", "propriedades-rurais"],
+							"query": [
+								{
+									"key": "formato",
+									"value": "pdf"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Exportar Unidades de Produção (PDF)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/pdf"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/relatorios/exportar/unidades-producao?formato=pdf",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "relatorios", "exportar", "unidades-producao"],
+							"query": [
+								{
+									"key": "formato",
+									"value": "pdf"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Exportar Hectares por Nome (PDF)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/pdf"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/relatorios/exportar/hectares-cultura?search=Fazenda&formato=pdf",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "relatorios", "exportar", "hectares-cultura"],
+							"query": [
+								{
+									"key": "search",
+									"value": "Fazenda"
+								},
+								{
+									"key": "formato",
+									"value": "pdf"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Exportar Propriedades por Município (PDF)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/pdf"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/relatorios/exportar/propriedades-municipio?formato=pdf",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "relatorios", "exportar", "propriedades-municipio"],
+							"query": [
+								{
+									"key": "formato",
+									"value": "pdf"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Exportar Animais por Espécie (PDF)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/pdf"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/relatorios/exportar/animais-especie?formato=pdf",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "relatorios", "exportar", "animais-especie"],
+							"query": [
+								{
+									"key": "formato",
+									"value": "pdf"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Exportar Rebanhos por Produtor (PDF)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/pdf"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/relatorios/exportar/rebanhos-produtor?produtor_id={{produtor_id}}&formato=pdf",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "relatorios", "exportar", "rebanhos-produtor"],
+							"query": [
+								{
+									"key": "produtor_id",
+									"value": "{{produtor_id}}"
+								},
+								{
+									"key": "formato",
+									"value": "pdf"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cache Management",
+			"item": [
+				{
+					"name": "Cache Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/cache/stats",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "cache", "stats"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cache Config",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/cache/config",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "cache", "config"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Clear Cache",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/cache/flush",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "cache", "flush"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Password Reset",
+			"item": [
+				{
+					"name": "Forgot Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"joao@agrosistemas.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/forgot-password",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth", "forgot-password"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Validate Reset Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"joao@agrosistemas.com\",\n    \"token\": \"TOKEN_AQUI\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/validate-reset-token",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth", "validate-reset-token"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"joao@agrosistemas.com\",\n    \"token\": \"TOKEN_AQUI\",\n    \"password\": \"novasenha123\",\n    \"password_confirmation\": \"novasenha123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/reset-password",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth", "reset-password"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080"
+		}
+	]
+}

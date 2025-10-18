@@ -1,0 +1,800 @@
+/* Sistema de Design Moderno para Modais - AgroSistemas */
+
+/* Variáveis CSS para cores do sistema */
+:root {
+  --primary-color: #10b981;
+  --primary-hover: #059669;
+  --primary-light: #d1fae5;
+  --secondary-color: #6b7280;
+  --secondary-hover: #4b5563;
+  --danger-color: #ef4444;
+  --danger-hover: #dc2626;
+  --warning-color: #f59e0b;
+  --warning-hover: #d97706;
+  --success-color: #10b981;
+  --success-hover: #059669;
+  
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  
+  --border-color: #e5e7eb;
+  --border-hover: #d1d5db;
+  --background: #ffffff;
+  --background-secondary: #f9fafb;
+  --background-overlay: rgba(0, 0, 0, 0.5);
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  
+  --transition-fast: 0.15s ease-in-out;
+  --transition-normal: 0.3s ease-in-out;
+  --transition-slow: 0.5s ease-in-out;
+}
+
+/* Overlay do Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--background-overlay);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn var(--transition-normal);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    -webkit-backdrop-filter: blur(0px);
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  }
+}
+
+/* Container do Modal */
+.modal-container {
+  background: var(--background);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: slideInUp var(--transition-normal);
+  position: relative;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Header do Modal */
+.modal-header {
+  padding: 1.25rem 2rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(135deg, var(--background) 0%, var(--background-secondary) 100%);
+  position: relative;
+}
+
+.modal-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color) 0%, var(--success-color) 100%);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modal-title-icon {
+  width: 2rem;
+  height: 2rem;
+  background: var(--primary-light);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-color);
+  font-size: 1.125rem;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: var(--background-secondary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--text-secondary);
+}
+
+.modal-close:hover {
+  background: var(--border-hover);
+  color: var(--text-primary);
+  transform: scale(1.1);
+}
+
+/* Conteúdo do Modal */
+.modal-content {
+  padding: 1.5rem 2rem;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Formulário */
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.form-label-required {
+  color: var(--danger-color);
+  font-weight: 700;
+}
+
+.form-input {
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  transition: all var(--transition-fast);
+  background: var(--background);
+  color: var(--text-primary);
+  height: 2.5rem;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  transform: translateY(-1px);
+}
+
+.form-input:hover:not(:focus) {
+  border-color: var(--border-hover);
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Input numérico */
+.form-input-number {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.form-input-number input {
+  flex: 1;
+  padding-right: 3rem;
+  width: 100%;
+}
+
+.form-input-number .input-arrows {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  z-index: 1;
+}
+
+.input-arrow {
+  width: 1.25rem;
+  height: 0.875rem;
+  background: var(--background-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--text-secondary);
+  font-size: 0.625rem;
+  line-height: 1;
+}
+
+.input-arrow:hover {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+/* Dropdown */
+.form-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.form-dropdown .p-dropdown {
+  width: 100%;
+}
+
+.form-dropdown .p-dropdown .p-dropdown-trigger {
+  background: var(--background);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  min-height: 2.5rem;
+  box-sizing: border-box;
+}
+
+.form-dropdown .p-dropdown .p-dropdown-label {
+  padding: 0;
+  font-size: 1rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.form-dropdown .p-dropdown .p-dropdown-trigger .p-dropdown-label.p-placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.form-dropdown .p-dropdown:hover .p-dropdown-trigger {
+  border-color: var(--border-hover);
+}
+
+.form-dropdown .p-dropdown.p-focus .p-dropdown-trigger {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Textarea */
+.form-textarea {
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* Footer do Modal */
+.modal-footer {
+  padding: 1rem 2rem 2rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  background: var(--background-secondary);
+  border-top: 1px solid var(--border-color);
+}
+
+/* Botões */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left var(--transition-normal);
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--success-color) 100%);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--success-hover) 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-secondary {
+  background: var(--background);
+  color: var(--text-secondary);
+  border: 2px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--background-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  background: var(--danger-color);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-danger:hover {
+  background: var(--danger-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Estados de Loading */
+.btn-loading {
+  position: relative;
+  color: transparent;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1rem;
+  height: 1rem;
+  margin: -0.5rem 0 0 -0.5rem;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+  .modal-container {
+    margin: 0.5rem;
+    max-width: calc(100vw - 1rem);
+  }
+  
+  .modal-header,
+  .modal-content,
+  .modal-footer {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+  
+  .modal-title {
+    font-size: 1.25rem;
+  }
+  
+  .btn {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.8125rem;
+  }
+}
+
+/* Animações de entrada para campos */
+.form-group {
+  animation: slideInLeft 0.3s ease-out;
+  animation-fill-mode: both;
+}
+
+.form-group:nth-child(1) { animation-delay: 0.1s; }
+.form-group:nth-child(2) { animation-delay: 0.2s; }
+.form-group:nth-child(3) { animation-delay: 0.3s; }
+.form-group:nth-child(4) { animation-delay: 0.4s; }
+.form-group:nth-child(5) { animation-delay: 0.5s; }
+.form-group:nth-child(6) { animation-delay: 0.6s; }
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Validação de campos */
+.form-input.error {
+  border-color: var(--danger-color);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-error {
+  color: var(--danger-color);
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 0.25rem;
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Sucesso de validação */
+.form-input.success {
+  border-color: var(--success-color);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.form-success {
+  color: var(--success-color);
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+/* Botões de Ações - Sistema Unificado */
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.action-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-md);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 0.875rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left var(--transition-normal);
+}
+
+.action-btn:hover::before {
+  left: 100%;
+}
+
+.action-btn:active {
+  transform: scale(0.95);
+}
+
+/* Botão Visualizar */
+.action-btn.view {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.action-btn.view:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
+}
+
+/* Botão Editar */
+.action-btn.edit {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+.action-btn.edit:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
+}
+
+/* Botão Excluir */
+.action-btn.delete {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+.action-btn.delete:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
+}
+
+/* Responsividade para telas menores */
+@media (max-width: 768px) {
+  .action-buttons {
+    gap: 0.5rem;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .action-btn {
+    width: 100%;
+    height: 2.25rem;
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .action-buttons {
+    gap: 0.375rem;
+  }
+  
+  .action-btn {
+    height: 2rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Tooltip para botões */
+.action-btn[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: -2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text-primary);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Alinhamento da coluna de ações */
+.p-datatable .p-datatable-tbody > tr > td:last-child {
+  text-align: center;
+  vertical-align: middle;
+  padding: 0.5rem;
+}
+
+.p-datatable .p-datatable-thead > tr > th:last-child {
+  text-align: center;
+}
+
+/* Forçar centralização dos botões de ações */
+.p-datatable .p-datatable-tbody > tr > td:last-child .action-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.p-datatable .p-datatable-tbody > tr > td:last-child .action-buttons .action-btn {
+  margin: 0 !important;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Reset completo para a coluna de ações */
+.p-datatable .p-datatable-tbody > tr > td:last-child {
+  text-align: center !important;
+  vertical-align: middle !important;
+  padding: 0.5rem !important;
+  margin: 0 !important;
+}
+
+.p-datatable .p-datatable-tbody > tr > td:last-child * {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Melhorias no hover dos botões de ações */
+.p-datatable .p-datatable-tbody > tr > td:last-child .p-button {
+  transition: all 0.3s ease;
+  border-width: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.p-datatable .p-datatable-tbody > tr > td:last-child .p-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.p-datatable .p-datatable-tbody > tr > td:last-child .p-button:hover::before {
+  left: 100%;
+}
+
+/* Hover específico para cada tipo de botão */
+.p-datatable .p-datatable-tbody > tr > td:last-child .p-button.p-button-info:hover {
+  background: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  color: white !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.p-datatable .p-datatable-tbody > tr > td:last-child .p-button.p-button-warning:hover {
+  background: #10b981 !important;
+  border-color: #10b981 !important;
+  color: white !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.p-datatable .p-datatable-tbody > tr > td:last-child .p-button.p-button-danger:hover {
+  background: #ef4444 !important;
+  border-color: #ef4444 !important;
+  color: white !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+/* Animação de clique */
+.p-datatable .p-datatable-tbody > tr > td:last-child .p-button:active {
+  transform: translateY(0) scale(0.95);
+}
+
+/* Altura consistente para todos os campos */
+.form-dropdown .p-calendar .p-inputtext {
+  height: 2.5rem;
+  box-sizing: border-box;
+}
+
+.form-dropdown .p-calendar .p-button {
+  height: 2.5rem;
+  box-sizing: border-box;
+}
+
+.form-textarea {
+  height: 3.5rem;
+  min-height: 3.5rem;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+/* Garantir largura consistente em grid */
+.form-group[style*="grid-template-columns"] .form-dropdown,
+.form-group[style*="grid-template-columns"] .form-input-number {
+  width: 100%;
+}
+
+/* ALTURA PADRONIZADA PARA TODOS OS CAMPOS - 2.5rem */
+.form-group input.form-input,
+.form-group .p-dropdown .p-dropdown-trigger,
+.form-group .p-calendar .p-inputtext,
+.form-group .p-calendar .p-button,
+.form-group textarea.form-textarea {
+  height: 2.5rem !important;
+  min-height: 2.5rem !important;
+  box-sizing: border-box;
+}
+
+/* Altura reduzida para campos numéricos específicos */
+.form-input-number input.area-input,
+.form-input-number input.quantidade-input {
+  height: 2.5rem !important;
+  min-height: 2.5rem !important;
+}
+
+/* Garantir que dropdowns tenham altura consistente */
+.p-dropdown .p-dropdown-label {
+  padding: 0.875rem 1rem !important;
+  line-height: 1.5 !important;
+}
+
+/* Garantir que textareas tenham altura consistente */
+.form-textarea {
+  height: 3.5rem !important;
+  min-height: 3.5rem !important;
+  resize: vertical;
+}
+
+
+/* Ajustar setinhas para campos numéricos menores */
+.form-input-number input.quantidade-input + .input-arrows .input-arrow,
+.form-input-number input.area-input + .input-arrows .input-arrow {
+  width: 1rem;
+  height: 0.75rem;
+  font-size: 0.5rem;
+  line-height: 1;
+}
