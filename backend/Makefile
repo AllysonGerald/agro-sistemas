@@ -401,7 +401,7 @@ debug_config:
 
 # Debug: mostrar rotas com middlewares
 debug_routes:
-	docker compose exec php bash -c "php artisan route:list --columns=uri,name,action,middleware"
+	docker compose exec php bash -c "php artisan route:list -v"
 
 # Verificar saúde da aplicação
 health_check:
