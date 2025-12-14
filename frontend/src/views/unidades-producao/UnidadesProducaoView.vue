@@ -449,11 +449,7 @@ const viewUnidade = async (unidade: UnidadeProducao) => {
   if (propriedadesOptions.value.length === 0) {
     await loadPropriedades()
   }
-  
-  // Aguardar o próximo tick para garantir que a reatividade seja processada
-  await nextTick()
-  
-  await fillForm(unidade)
+  fillForm(unidade)
   dialogMode.value = 'view'
   showDialog.value = true
 }
@@ -463,16 +459,12 @@ const editUnidade = async (unidade: UnidadeProducao) => {
   if (propriedadesOptions.value.length === 0) {
     await loadPropriedades()
   }
-  
-  // Aguardar o próximo tick para garantir que a reatividade seja processada
-  await nextTick()
-  
-  await fillForm(unidade)
+  fillForm(unidade)
   dialogMode.value = 'edit'
   showDialog.value = true
 }
 
-const fillForm = async (unidade: UnidadeProducao) => {
+const fillForm = (unidade: UnidadeProducao) => {
   form.id = unidade.id
   form.nome_cultura = unidade.nome_cultura
   form.area_total_ha = unidade.area_total_ha?.toString() || ''
@@ -490,9 +482,6 @@ const fillForm = async (unidade: UnidadeProducao) => {
   }
 
   form.propriedade_id = unidade.propriedade_id
-  
-  // Aguardar o próximo tick para garantir que a reatividade seja processada
-  await nextTick()
 }
 
 const resetForm = () => {

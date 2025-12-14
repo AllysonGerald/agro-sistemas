@@ -15,10 +15,24 @@ class StorePropriedadeRequest extends FormRequest
     {
         return [
             'nome' => ['required', 'string', 'max:255'],
+            'cep' => ['nullable', 'string', 'max:10'],
+            'logradouro' => ['nullable', 'string', 'max:255'],
+            'numero' => ['nullable', 'string', 'max:20'],
+            'complemento' => ['nullable', 'string', 'max:255'],
+            'bairro' => ['nullable', 'string', 'max:255'],
             'municipio' => ['required', 'string', 'max:255'],
             'uf' => ['required', 'string', 'size:2', 'regex:/^[A-Z]{2}$/'],
             'inscricao_estadual' => ['nullable', 'string', 'max:50'],
+            'car' => ['nullable', 'string', 'max:50'],
+            'matricula' => ['nullable', 'string', 'max:50'],
+            'cartorio' => ['nullable', 'string', 'max:255'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'area_total' => ['required', 'numeric', 'min:0.01', 'max:999999.99'],
+            'area_preservada' => ['nullable', 'numeric', 'min:0', 'max:999999.99'],
+            'tipo_exploracao' => ['nullable', 'in:pecuaria,agricultura,mista,silvicultura,outro'],
+            'data_aquisicao' => ['nullable', 'date'],
+            'observacoes' => ['nullable', 'string'],
             'produtor_id' => ['required', 'exists:produtores_rurais,id']
         ];
     }

@@ -17,6 +17,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,
         ]);
+
+        // Configurar middleware de autenticação para retornar JSON em APIs
+        $middleware->redirectGuestsTo(function ($request) {
+            if ($request->is('api/*')) {
+                return null; // Não redirecionar, deixar o exception handler cuidar
+            }
+            return route('login');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Configurar resposta JSON para falhas de autenticação em APIs

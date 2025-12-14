@@ -75,12 +75,12 @@
         <Column header="Ações" :exportable="false" style="min-width: 10rem">
           <template #body="slotProps">
             <div class="flex gap-4 justify-content-start">
-              <Button icon="pi pi-eye" severity="info" outlined size="small" @click="viewPropriedade(slotProps.data)"
-                v-tooltip="'Visualizar'" />
+              <Button icon="pi pi-eye" severity="info" outlined size="small"
+                @click.stop="viewPropriedade(slotProps.data)" v-tooltip="'Visualizar'" />
               <Button icon="pi pi-pencil" severity="warning" outlined size="small"
-                @click="editPropriedade(slotProps.data)" v-tooltip="'Editar'" />
-              <Button icon="pi pi-trash" severity="danger" outlined size="small" @click="confirmDelete(slotProps.data)"
-                v-tooltip="'Excluir'" />
+                @click.stop="editPropriedade(slotProps.data)" v-tooltip="'Editar'" />
+              <Button icon="pi pi-trash" severity="danger" outlined size="small"
+                @click.stop="confirmDelete(slotProps.data)" v-tooltip="'Excluir'" />
             </div>
           </template>
         </Column>
@@ -104,7 +104,7 @@
 
     <!-- Modal Moderno de Propriedade -->
     <div v-if="showDialog" class="modal-overlay" @click.self="closeDialog">
-      <div class="modal-container" style="max-width: 600px;">
+      <div class="modal-container" style="max-width: 900px;">
         <!-- Header -->
         <div class="modal-header">
           <h2 class="modal-title">
@@ -112,7 +112,7 @@
               <i class="fas fa-home"></i>
             </div>
             {{ dialogMode === 'create' ? 'Nova Propriedade Rural' : dialogMode === 'edit' ? 'Editar Propriedade Rural' :
-            'Visualizar Propriedade Rural' }}
+              'Visualizar Propriedade Rural' }}
           </h2>
           <button class="modal-close" @click="closeDialog">
             <i class="pi pi-times"></i>
@@ -122,52 +122,174 @@
         <!-- Conteúdo -->
         <div class="modal-content">
           <form @submit.prevent="savePropriedade" class="modal-form">
-            <!-- Nome da Propriedade -->
-            <TextInput id="nome" label="Nome da Propriedade" v-model="form.nome"
-              placeholder="Digite o nome da propriedade" :required="true" :disabled="dialogMode === 'view'"
-              :error="errors.nome" />
-
-            <!-- Município -->
-            <TextInput id="municipio" label="Município" v-model="form.municipio" placeholder="Digite o município"
-              :required="true" :disabled="dialogMode === 'view'" :error="errors.municipio" />
-
-            <!-- Estado -->
-            <div class="form-group">
-              <label for="uf" class="form-label">
-                Estado
-                <span class="form-label-required">*</span>
-              </label>
-              <div class="form-dropdown">
-                <Select id="uf" v-model="form.uf" :options="ufOptions" :class="{ 'error': errors.uf }"
-                  :disabled="dialogMode === 'view'" placeholder="Selecione o estado" optionLabel="label"
-                  optionValue="value" style="width: 100%;" />
+            <!-- Nome da Propriedade e Produtor-->
+            <div class="form-row">
+              <div class="form-col-65">
+                <TextInput id="nome" label="Nome da Propriedade" v-model="form.nome"
+                  placeholder="Digite o nome da propriedade" :required="true" :disabled="dialogMode === 'view'"
+                  :error="errors.nome" />
               </div>
-              <div v-if="errors.uf" class="form-error">{{ errors.uf }}</div>
+              <div class="form-col-35">
+                <DropdownInput id="produtor_id" label="Produtor Rural" v-model="form.produtor_id"
+                  :options="produtoresOptions" :required="true" :disabled="dialogMode === 'view'"
+                  placeholder="Selecione" optionLabel="nome" optionValue="id" :error="errors.produtor_id" />
+              </div>
             </div>
 
-            <!-- Inscrição Estadual -->
-            <TextInput id="inscricao_estadual" label="Inscrição Estadual" v-model="form.inscricao_estadual"
-              placeholder="Digite a inscrição estadual" :disabled="dialogMode === 'view'"
-              :error="errors.inscricao_estadual" />
+            <!-- Separador de Localização -->
+            <div class="form-section-divider">
+              <div class="divider-line"></div>
+              <div class="divider-content">
+                <i class="pi pi-map-marker"></i>
+                <span>Localização</span>
+              </div>
+              <div class="divider-line"></div>
+            </div>
 
-            <!-- Área Total -->
-            <NumberInput id="area_total" label="Área Total (hectares)" v-model="form.area_total"
-              placeholder="Ex: 100.50" :required="true" :disabled="dialogMode === 'view'" :error="errors.area_total"
-              size="small" :step="0.1" />
+            <!-- CEP com hint -->
+            <div class="field-with-hint">
+              <TextInput id="cep" label="CEP" v-model="form.cep" placeholder="00000-000" :required="false"
+                :disabled="dialogMode === 'view'" :error="errors.cep" @blur="buscarCep" />
+              <small class="field-hint">
+                <i class="pi pi-info-circle"></i>
+                Digite o CEP e pressione TAB para preencher automaticamente
+              </small>
+            </div>
 
-            <!-- Produtor -->
-            <DropdownInput 
-              id="produtor_id" 
-              label="Produtor Rural" 
-              v-model="form.produtor_id"
-              :options="produtoresOptions" 
-              :required="true"
-              :disabled="dialogMode === 'view'" 
-              placeholder="Selecione o produtor" 
-              optionLabel="nome" 
-              optionValue="id"
-              :error="errors.produtor_id" 
-            />
+            <!-- Logradouro e Número -->
+            <div class="form-row">
+              <div class="form-col-75">
+                <TextInput id="logradouro" label="Logradouro" v-model="form.logradouro"
+                  placeholder="Rua, Avenida, Estrada, etc." :required="false" :disabled="dialogMode === 'view'"
+                  :error="errors.logradouro" />
+              </div>
+              <div class="form-col-25">
+                <TextInput id="numero" label="Número" v-model="form.numero" placeholder="Nº" :required="false"
+                  :disabled="dialogMode === 'view'" :error="errors.numero" />
+              </div>
+            </div>
+
+            <!-- Complemento e Bairro -->
+            <div class="form-row">
+              <div class="form-col-50">
+                <TextInput id="complemento" label="Complemento" v-model="form.complemento"
+                  placeholder="Km, Fazenda, Sítio" :required="false" :disabled="dialogMode === 'view'"
+                  :error="errors.complemento" />
+              </div>
+              <div class="form-col-50">
+                <TextInput id="bairro" label="Bairro/Distrito" v-model="form.bairro" placeholder="Nome do bairro"
+                  :required="false" :disabled="dialogMode === 'view'" :error="errors.bairro" />
+              </div>
+            </div>
+
+            <!-- Município e Estado -->
+            <div class="form-row">
+              <div class="form-col-75">
+                <TextInput id="municipio" label="Município" v-model="form.municipio" placeholder="Nome do município"
+                  :required="true" :disabled="dialogMode === 'view'" :error="errors.municipio" />
+              </div>
+              <div class="form-col-25">
+                <DropdownInput id="uf" label="Estado (UF)" v-model="form.uf" :options="ufOptions" optionLabel="label"
+                  optionValue="value" placeholder="UF" :required="true" :disabled="dialogMode === 'view'"
+                  :error="errors.uf" />
+              </div>
+            </div>
+
+            <!-- Coordenadas GPS -->
+            <div class="form-row">
+              <div class="form-col-50">
+                <TextInput id="latitude" label="Latitude" v-model="form.latitude" placeholder="-5.123456"
+                  :required="false" :disabled="dialogMode === 'view'" :error="errors.latitude" />
+              </div>
+              <div class="form-col-50">
+                <TextInput id="longitude" label="Longitude" v-model="form.longitude" placeholder="-42.123456"
+                  :required="false" :disabled="dialogMode === 'view'" :error="errors.longitude" />
+              </div>
+            </div>
+
+            <!-- Separador de Documentação -->
+            <div class="form-section-divider">
+              <div class="divider-line"></div>
+              <div class="divider-content">
+                <i class="pi pi-file"></i>
+                <span>Documentação e Registro</span>
+              </div>
+              <div class="divider-line"></div>
+            </div>
+
+            <!-- Inscrição Estadual e CAR -->
+            <div class="form-row">
+              <div class="form-col-50">
+                <TextInput id="inscricao_estadual" label="Inscrição Estadual (IE)" v-model="form.inscricao_estadual"
+                  placeholder="000.000.000.000" :disabled="dialogMode === 'view'" :error="errors.inscricao_estadual" />
+              </div>
+              <div class="form-col-50">
+                <TextInput id="car" label="CAR" v-model="form.car" placeholder="XX-0000000-XXXX" :required="false"
+                  :disabled="dialogMode === 'view'" :error="errors.car" />
+              </div>
+            </div>
+
+            <!-- Matrícula e Cartório -->
+            <div class="form-row">
+              <div class="form-col-50">
+                <TextInput id="matricula" label="Número da Matrícula" v-model="form.matricula"
+                  placeholder="Matrícula do imóvel" :required="false" :disabled="dialogMode === 'view'"
+                  :error="errors.matricula" />
+              </div>
+              <div class="form-col-50">
+                <TextInput id="cartorio" label="Cartório de Registro" v-model="form.cartorio"
+                  placeholder="Nome do cartório" :required="false" :disabled="dialogMode === 'view'"
+                  :error="errors.cartorio" />
+              </div>
+            </div>
+
+            <!-- Separador de Áreas -->
+            <div class="form-section-divider">
+              <div class="divider-line"></div>
+              <div class="divider-content">
+                <i class="pi pi-chart-bar"></i>
+                <span>Áreas e Tipo de Exploração</span>
+              </div>
+              <div class="divider-line"></div>
+            </div>
+
+            <!-- Áreas e Data de Aquisição -->
+            <div class="form-row">
+              <div class="form-col-35">
+                <NumberInput id="area_total" label="Área Total (ha)" v-model="form.area_total" placeholder="Ex: 100.50"
+                  :required="true" :disabled="dialogMode === 'view'" :error="errors.area_total" size="small"
+                  :step="0.01" />
+              </div>
+              <div class="form-col-35">
+                <NumberInput id="area_preservada" label="Área Preservada (ha)" v-model="form.area_preservada"
+                  placeholder="Ex: 20.00" :required="false" :disabled="dialogMode === 'view'"
+                  :error="errors.area_preservada" size="small" :step="0.01" />
+              </div>
+              <div class="form-col-30">
+                <CalendarInput id="data_aquisicao" label="Data Aquisição" v-model="form.data_aquisicao"
+                  :disabled="dialogMode === 'view'" :error="errors.data_aquisicao" />
+              </div>
+            </div>
+
+            <!-- Tipo de Exploração -->
+            <div class="form-group">
+              <label for="tipo_exploracao" class="form-label">Tipo de Exploração</label>
+              <div class="form-dropdown">
+                <select id="tipo_exploracao" v-model="form.tipo_exploracao" :disabled="dialogMode === 'view'"
+                  class="form-select">
+                  <option value="" disabled>Selecione o tipo de exploração</option>
+                  <option v-for="tipo in tiposExploracao" :key="tipo.value" :value="tipo.value">
+                    {{ tipo.label }}
+                  </option>
+                </select>
+              </div>
+              <div v-if="errors.tipo_exploracao" class="form-error">{{ errors.tipo_exploracao }}</div>
+            </div>
+
+            <!-- Observações -->
+            <TextareaInput id="observacoes" label="Observações" v-model="form.observacoes"
+              placeholder="Informações adicionais sobre a propriedade (benfeitorias, recursos hídricos, etc.)"
+              :required="false" :disabled="dialogMode === 'view'" :error="errors.observacoes" :rows="5" />
           </form>
         </div>
 
@@ -235,17 +357,32 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, nextTick } from 'vue'
 import { useToast } from 'primevue/usetoast'
+import Select from 'primevue/select'
 import api from '../../services/api'
-import { TextInput, NumberInput, DropdownInput, CustomPagination } from '../../components/forms'
+import { TextInput, NumberInput, DropdownInput, TextareaInput, CalendarInput, CustomPagination } from '../../components/forms'
 
 // Interfaces
 interface Propriedade {
   id: number
   nome: string
+  cep?: string
+  logradouro?: string
+  numero?: string
+  complemento?: string
+  bairro?: string
   municipio: string
   uf: string
   inscricao_estadual?: string
+  car?: string
+  matricula?: string
+  cartorio?: string
+  latitude?: string
+  longitude?: string
   area_total: number
+  area_preservada?: number
+  tipo_exploracao?: string
+  data_aquisicao?: string
+  observacoes?: string
   produtor_id: number
   produtor?: {
     id: number
@@ -294,19 +431,47 @@ const propriedadeToDelete = ref<Propriedade | null>(null)
 const form = reactive({
   id: null as number | null,
   nome: '',
+  cep: '',
+  logradouro: '',
+  numero: '',
+  complemento: '',
+  bairro: '',
   municipio: '',
   uf: '',
   inscricao_estadual: '',
+  car: '',
+  matricula: '',
+  cartorio: '',
+  latitude: '',
+  longitude: '',
   area_total: '',
+  area_preservada: '',
+  tipo_exploracao: '',
+  data_aquisicao: null as Date | null,
+  observacoes: '',
   produtor_id: null as number | null
 })
 
 const errors = reactive({
   nome: '',
+  cep: '',
+  logradouro: '',
+  numero: '',
+  complemento: '',
+  bairro: '',
   municipio: '',
   uf: '',
   inscricao_estadual: '',
+  car: '',
+  matricula: '',
+  cartorio: '',
+  latitude: '',
+  longitude: '',
   area_total: '',
+  area_preservada: '',
+  tipo_exploracao: '',
+  data_aquisicao: '',
+  observacoes: '',
   produtor_id: ''
 })
 
@@ -342,6 +507,14 @@ const ufOptions = [
 ]
 
 const produtoresOptions = ref<Produtor[]>([])
+
+const tiposExploracao = [
+  { label: 'Pecuária', value: 'pecuaria' },
+  { label: 'Agricultura', value: 'agricultura' },
+  { label: 'Mista', value: 'mista' },
+  { label: 'Silvicultura', value: 'silvicultura' },
+  { label: 'Outro', value: 'outro' }
+]
 
 // Debounce function
 const createDebounce = (func: Function, delay: number) => {
@@ -385,7 +558,14 @@ const loadPropriedades = async () => {
       throw new Error(response.data.message || 'Erro ao carregar propriedades')
     }
   } catch (error: any) {
-    if (error.response?.status !== 404) {
+    if (error.response?.status === 401) {
+      toast.add({
+        severity: 'warn',
+        summary: 'Sessão Expirada',
+        detail: 'Por favor, faça login novamente',
+        life: 5000
+      })
+    } else if (error.response?.status !== 404) {
       toast.add({
         severity: 'error',
         summary: 'Erro',
@@ -401,7 +581,7 @@ const loadPropriedades = async () => {
 const loadProdutores = async () => {
   try {
     const response = await api.get('/v1/produtores-rurais', { params: { per_page: 1000 } })
-    
+
     if (response.data.success) {
       produtoresOptions.value = response.data.data.data || response.data.data
     }
@@ -427,7 +607,11 @@ const clearFilters = () => {
   loadPropriedades()
 }
 
-const openCreateDialog = () => {
+const openCreateDialog = async () => {
+  // Garantir que os produtores estejam carregados antes de abrir o modal
+  if (produtoresOptions.value.length === 0) {
+    await loadProdutores()
+  }
   resetForm()
   dialogMode.value = 'create'
   showDialog.value = true
@@ -438,7 +622,7 @@ const viewPropriedade = async (propriedade: Propriedade) => {
   if (produtoresOptions.value.length === 0) {
     await loadProdutores()
   }
-  await fillForm(propriedade)
+  fillForm(propriedade)
   dialogMode.value = 'view'
   showDialog.value = true
 }
@@ -448,46 +632,99 @@ const editPropriedade = async (propriedade: Propriedade) => {
   if (produtoresOptions.value.length === 0) {
     await loadProdutores()
   }
-  
-  // Aguardar o próximo tick para garantir que a reatividade seja processada
-  await nextTick()
-  
-  await fillForm(propriedade)
+  fillForm(propriedade)
   dialogMode.value = 'edit'
   showDialog.value = true
 }
 
-const fillForm = async (propriedade: Propriedade) => {
+const fillForm = (propriedade: Propriedade) => {
   form.id = propriedade.id
-  form.nome = propriedade.nome
-  form.municipio = propriedade.municipio
-  form.uf = propriedade.uf
+  form.nome = propriedade.nome || ''
+  form.cep = propriedade.cep || ''
+  form.logradouro = propriedade.logradouro || ''
+  form.numero = propriedade.numero || ''
+  form.complemento = propriedade.complemento || ''
+  form.bairro = propriedade.bairro || ''
+  form.municipio = propriedade.municipio || ''
+  form.uf = propriedade.uf || ''
   form.inscricao_estadual = propriedade.inscricao_estadual || ''
-  form.area_total = propriedade.area_total?.toString() || ''
-  form.produtor_id = propriedade.produtor_id
-  
-  // Aguardar o próximo tick para garantir que a reatividade seja processada
-  await nextTick()
+  form.car = propriedade.car || ''
+  form.matricula = propriedade.matricula || ''
+  form.cartorio = propriedade.cartorio || ''
+  form.latitude = propriedade.latitude ? String(propriedade.latitude) : ''
+  form.longitude = propriedade.longitude ? String(propriedade.longitude) : ''
+  form.area_total = propriedade.area_total ? String(propriedade.area_total) : ''
+  form.area_preservada = propriedade.area_preservada ? String(propriedade.area_preservada) : ''
+  form.tipo_exploracao = propriedade.tipo_exploracao || ''
+  // Converter data para objeto Date que o CalendarInput espera
+  form.data_aquisicao = propriedade.data_aquisicao ? new Date(propriedade.data_aquisicao) : null
+  form.observacoes = propriedade.observacoes || ''
+  form.produtor_id = propriedade.produtor_id || null
 }
 
 const resetForm = () => {
   form.id = null
   form.nome = ''
+  form.cep = ''
+  form.logradouro = ''
+  form.numero = ''
+  form.complemento = ''
+  form.bairro = ''
   form.municipio = ''
   form.uf = ''
   form.inscricao_estadual = ''
+  form.car = ''
+  form.matricula = ''
+  form.cartorio = ''
+  form.latitude = ''
+  form.longitude = ''
   form.area_total = ''
+  form.area_preservada = ''
+  form.tipo_exploracao = ''
+  form.data_aquisicao = null
+  form.observacoes = ''
   form.produtor_id = null
   clearErrors()
 }
 
 const clearErrors = () => {
-  errors.nome = ''
-  errors.municipio = ''
-  errors.uf = ''
-  errors.inscricao_estadual = ''
-  errors.area_total = ''
-  errors.produtor_id = ''
+  Object.keys(errors).forEach(key => {
+    (errors as any)[key] = ''
+  })
+}
+
+// Buscar CEP via ViaCEP API
+const buscarCep = async () => {
+  const cep = form.cep.replace(/\D/g, '')
+  if (cep.length !== 8) return
+
+  try {
+    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
+    const data = await response.json()
+
+    if (!data.erro) {
+      form.logradouro = data.logradouro || ''
+      form.bairro = data.bairro || ''
+      form.municipio = data.localidade || ''
+      form.uf = data.uf || ''
+
+      toast.add({
+        severity: 'success',
+        summary: 'CEP encontrado',
+        detail: 'Endereço preenchido automaticamente',
+        life: 3000
+      })
+    } else {
+      toast.add({
+        severity: 'warn',
+        summary: 'CEP não encontrado',
+        detail: 'Preencha o endereço manualmente',
+        life: 3000
+      })
+    }
+  } catch (error) {
+    console.error('Erro ao buscar CEP:', error)
+  }
 }
 
 
@@ -531,10 +768,24 @@ const savePropriedade = async () => {
 
     const payload = {
       nome: form.nome,
+      cep: form.cep,
+      logradouro: form.logradouro,
+      numero: form.numero,
+      complemento: form.complemento,
+      bairro: form.bairro,
       municipio: form.municipio,
       uf: form.uf,
       inscricao_estadual: form.inscricao_estadual,
+      car: form.car,
+      matricula: form.matricula,
+      cartorio: form.cartorio,
+      latitude: form.latitude ? parseFloat(form.latitude) : null,
+      longitude: form.longitude ? parseFloat(form.longitude) : null,
       area_total: parseFloat(form.area_total),
+      area_preservada: form.area_preservada ? parseFloat(form.area_preservada) : null,
+      tipo_exploracao: form.tipo_exploracao || null,
+      data_aquisicao: form.data_aquisicao ? new Date(form.data_aquisicao).toISOString().split('T')[0] : null,
+      observacoes: form.observacoes,
       produtor_id: form.produtor_id
     }
 
@@ -554,7 +805,7 @@ const savePropriedade = async () => {
       })
 
       closeDialog()
-      loadPropriedades()
+      await loadPropriedades()
     } else {
       throw new Error(response.data.message || 'Erro ao salvar propriedade')
     }
@@ -636,6 +887,17 @@ const formatDate = (value: string) => {
 
 // Lifecycle
 onMounted(() => {
+  const token = localStorage.getItem('token')
+  console.log('Token presente:', !!token)
+  if (!token) {
+    console.warn('Usuário não autenticado!')
+    toast.add({
+      severity: 'warn',
+      summary: 'Não autenticado',
+      detail: 'Por favor, faça login',
+      life: 3000
+    })
+  }
   loadPropriedades()
   loadProdutores()
 })
@@ -644,6 +906,40 @@ onMounted(() => {
 <style scoped>
 .propriedades-container {
   padding: 1rem;
+}
+
+.form-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #1f2937;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 1.25rem;
+  padding-right: 2.5rem;
+}
+
+.form-select:hover:not(:disabled) {
+  border-color: #16a34a;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+}
+
+.form-select:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .card {
@@ -791,5 +1087,136 @@ onMounted(() => {
 
 .p-dialog .grid>div {
   margin-bottom: 1.25rem;
+}
+
+/* Ajuste específico para modal de propriedades */
+.propriedades-container .modal-overlay {
+  z-index: 9999 !important;
+  position: fixed !important;
+  display: flex !important;
+}
+
+.propriedades-container .modal-container {
+  position: relative !important;
+  z-index: 10000 !important;
+}
+
+.propriedades-container .modal-content {
+  max-height: 70vh !important;
+  overflow-y: auto !important;
+}
+
+/* Divisor de seção do formulário */
+.form-section-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0 1rem 0;
+  width: 100%;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #d1d5db, transparent);
+}
+
+.divider-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-radius: 20px;
+  color: #16a34a;
+  font-weight: 600;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(22, 163, 74, 0.1);
+}
+
+.divider-content i {
+  font-size: 1rem;
+}
+
+/* Campo com hint */
+.field-with-hint {
+  width: 100%;
+}
+
+.field-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+  padding-left: 0.25rem;
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+.field-hint i {
+  font-size: 0.7rem;
+  color: #16a34a;
+}
+
+/* Layout de linha do formulário */
+.form-row {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+}
+
+.form-col-25 {
+  flex: 0 0 calc(25% - 0.75rem);
+  min-width: 0;
+}
+
+.form-col-30 {
+  flex: 0 0 calc(30% - 0.7rem);
+  min-width: 0;
+}
+
+.form-col-35 {
+  flex: 0 0 calc(35% - 0.65rem);
+  min-width: 0;
+}
+
+.form-col-50 {
+  flex: 0 0 calc(50% - 0.5rem);
+  min-width: 0;
+}
+
+.form-col-65 {
+  flex: 0 0 calc(65% - 0.35rem);
+  min-width: 0;
+}
+
+.form-col-75 {
+  flex: 0 0 calc(75% - 0.25rem);
+  min-width: 0;
+}
+
+/* Responsividade para form-row */
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .form-col-25,
+  .form-col-30,
+  .form-col-35,
+  .form-col-50,
+  .form-col-65,
+  .form-col-75 {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .divider-content {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+  }
 }
 </style>

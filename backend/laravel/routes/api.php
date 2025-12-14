@@ -44,4 +44,30 @@ Route::prefix('v1')->group(function () {
     // Rotas de testes (podem ser removidas em produção)
     require __DIR__.'/api/testes.php';
 
+    // === NOVOS MÓDULOS ===
+
+    // Rotas de animais (gestão individual)
+    require __DIR__.'/api/animais.php';
+
+    // Rotas de lotes
+    require __DIR__.'/api/lotes.php';
+
+    // Rotas de pastos
+    require __DIR__.'/api/pastos.php';
+
+    // Rotas do módulo financeiro
+    require __DIR__.'/api/financeiro.php';
+
+    // Rotas de manejo
+    require __DIR__.'/api/manejo.php';
+
+    // Rotas de reprodução
+    require __DIR__.'/api/reproducao.php';
+
+    // Rotas de estoque
+    require __DIR__.'/api/estoque.php';
+
+    // Rotas de configurações do sistema
+    require __DIR__.'/api/configuracoes.php';
+
 });

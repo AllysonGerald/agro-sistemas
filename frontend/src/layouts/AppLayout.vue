@@ -5,17 +5,22 @@
       :class="{ 'active': sidebarVisible, 'collapsed': sidebarCollapsed }">
       <div class="layout-sidebar-content">
         <!-- Logo -->
-        <div class="p-4 border-b border-gray-200 h-16 flex items-center">
-          <div class="flex items-center">
-            <i class="fas fa-seedling text-2xl text-green-600 mr-3"></i>
-            <span class="text-xl font-bold text-gray-800">AgroSistemas</span>
+        <div class="sidebar-logo-container p-4 border-b border-gray-200 flex items-center" style="min-height: 64px;">
+          <div class="logo-normal">
+            <SimpleLogo size="small" />
+          </div>
+          <div class="logo-collapsed">
+            <div class="logo-icon-only">
+              <i class="fas fa-seedling"></i>
+              <i class="fas fa-cow"></i>
+            </div>
           </div>
         </div>
 
         <!-- Navigation Menu -->
         <div class="p-4">
           <nav class="space-y-2">
-            <router-link to="/" class="nav-item" exact-active-class="nav-item-active">
+            <router-link to="/dashboard" class="nav-item" exact-active-class="nav-item-active">
               <i class="far fa-chart-bar mr-3"></i>
               <span>Dashboard</span>
             </router-link>
@@ -40,9 +45,51 @@
               <span>Rebanhos</span>
             </router-link>
 
+            <router-link to="/animais" class="nav-item" exact-active-class="nav-item-active">
+              <i class="fas fa-paw mr-3"></i>
+              <span>Animais</span>
+            </router-link>
+
+            <router-link to="/lotes" class="nav-item" exact-active-class="nav-item-active">
+              <i class="fas fa-box mr-3"></i>
+              <span>Lotes</span>
+            </router-link>
+
+            <router-link to="/pastos" class="nav-item" exact-active-class="nav-item-active">
+              <i class="fas fa-map mr-3"></i>
+              <span>Pastos</span>
+            </router-link>
+
+            <router-link to="/manejo" class="nav-item" exact-active-class="nav-item-active">
+              <i class="fas fa-clipboard-list mr-3"></i>
+              <span>Manejo</span>
+            </router-link>
+
+            <router-link to="/financeiro" class="nav-item" exact-active-class="nav-item-active">
+              <i class="fas fa-dollar-sign mr-3"></i>
+              <span>Financeiro</span>
+            </router-link>
+
+            <router-link to="/estoque" class="nav-item" exact-active-class="nav-item-active">
+              <i class="fas fa-warehouse mr-3"></i>
+              <span>Estoque</span>
+            </router-link>
+
+            <router-link to="/calculadora" class="nav-item" exact-active-class="nav-item-active">
+              <i class="fas fa-calculator mr-3"></i>
+              <span>Calculadora</span>
+            </router-link>
+
             <router-link to="/relatorios" class="nav-item" exact-active-class="nav-item-active">
               <i class="fas fa-file-alt mr-3"></i>
               <span>Relatórios</span>
+            </router-link>
+
+            <div class="border-t border-gray-200 my-2"></div>
+
+            <router-link to="/configuracoes" class="nav-item" exact-active-class="nav-item-active">
+              <i class="fas fa-cog mr-3"></i>
+              <span>Configurações</span>
             </router-link>
           </nav>
         </div>
@@ -61,14 +108,15 @@
 
           <div class="flex items-center space-x-4 h-full">
             <span class="text-sm text-gray-600 flex items-center h-full">Olá, {{ authStore.user?.name }}</span>
-            <Button icon="pi pi-sign-out" class="p-button-outlined p-button-sm flex items-center h-full" @click="logout" label="Sair" />
+            <Button icon="pi pi-sign-out" class="p-button-outlined p-button-sm flex items-center h-full" @click="logout"
+              label="Sair" />
           </div>
         </div>
       </header>
 
       <!-- Page Content -->
       <main class="layout-content">
-        <router-view />
+        <router-view :key="route.fullPath" />
       </main>
     </div>
 
@@ -85,6 +133,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from 'primevue/usetoast'
+import SimpleLogo from '@/components/common/SimpleLogo.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -101,6 +150,13 @@ const pageTitle = computed(() => {
     'Propriedades': 'Propriedades Rurais',
     'UnidadesProducao': 'Unidades de Produção',
     'Rebanhos': 'Rebanhos',
+    'Animais': 'Animais',
+    'Lotes': 'Lotes',
+    'Pastos': 'Pastos e Áreas de Pastagem',
+    'Manejo': 'Manejo e Atividades',
+    'Financeiro': 'Gestão Financeira',
+    'Estoque': 'Controle de Estoque',
+    'Calculadora': 'Calculadora Pecuária',
     'Relatorios': 'Relatórios e Exportações'
   }
   return routeTitle[route.name as string] || 'Sistema Agropecuário'
@@ -186,6 +242,67 @@ onMounted(() => {
   display: none;
 }
 
+/* Logo na sidebar */
+.sidebar-logo-container {
+  justify-content: flex-start;
+}
+
+.sidebar-logo-container .logo-normal {
+  display: flex;
+}
+
+.sidebar-logo-container .logo-collapsed {
+  display: none;
+}
+
+.logo-icon-only {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
+
+.logo-icon-only i.fa-seedling {
+  position: relative;
+  z-index: 2;
+  font-size: 1.125rem;
+}
+
+.logo-icon-only i.fa-cow {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.5rem;
+}
+
+/* Quando colapsada */
+.layout-sidebar.collapsed .sidebar-logo-container {
+  justify-content: center !important;
+}
+
+.layout-sidebar.collapsed .sidebar-logo-container .logo-normal {
+  display: none !important;
+}
+
+.layout-sidebar.collapsed .sidebar-logo-container .logo-collapsed {
+  display: flex !important;
+  justify-content: center;
+}
+
 .layout-sidebar.collapsed .fa-seedling {
   margin-right: 0;
 }
@@ -215,7 +332,7 @@ onMounted(() => {
   .layout-sidebar {
     width: 240px;
   }
-  
+
   .layout-main-container {
     margin-left: 240px;
   }
@@ -235,21 +352,21 @@ onMounted(() => {
   .layout-main-container {
     @apply ml-0;
   }
-  
+
   .layout-topbar {
     @apply px-4 py-3;
     height: auto;
     min-height: 3.5rem;
   }
-  
+
   .layout-topbar h1 {
     @apply text-base;
   }
-  
+
   .layout-topbar .p-button {
     @apply text-xs;
   }
-  
+
   .layout-topbar span {
     @apply text-xs;
   }
@@ -261,15 +378,15 @@ onMounted(() => {
     @apply px-3 py-2;
     min-height: 3rem;
   }
-  
+
   .layout-topbar h1 {
     @apply text-sm ml-2;
   }
-  
+
   .layout-topbar .p-button {
     @apply p-1;
   }
-  
+
   .layout-topbar span {
     @apply hidden;
   }
