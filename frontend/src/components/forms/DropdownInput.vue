@@ -7,7 +7,7 @@
     <div class="form-dropdown">
       <Select 
         :id="id" 
-        :modelValue="modelValue" 
+        v-model="internalValue"
         :options="options" 
         :class="{ 'error': error }"
         :disabled="disabled" 
@@ -15,8 +15,7 @@
         :optionLabel="optionLabel" 
         :optionValue="optionValue"
         :checkmark="true"
-        style="width: 100%; height: 2.5rem;"
-        @update:modelValue="handleChange"
+        class="w-full"
       />
     </div>
     <div v-if="error" class="form-error">{{ error }}</div>
@@ -24,6 +23,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import Select from 'primevue/select'
 
 interface Props {
@@ -43,7 +43,7 @@ interface Emits {
   (e: 'update:modelValue', value: any): void
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   required: false,
   disabled: false,
   optionLabel: 'label',
@@ -52,7 +52,8 @@ withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
-const handleChange = (value: any) => {
-  emit('update:modelValue', value)
-}
+const internalValue = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value)
+})
 </script>

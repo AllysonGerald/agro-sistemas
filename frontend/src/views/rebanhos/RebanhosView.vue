@@ -398,11 +398,7 @@ const viewRebanho = async (rebanho: Rebanho) => {
   if (propriedadesOptions.value.length === 0) {
     await loadPropriedades()
   }
-  
-  // Aguardar o próximo tick para garantir que a reatividade seja processada
-  await nextTick()
-  
-  await fillForm(rebanho)
+  fillForm(rebanho)
   dialogMode.value = 'view'
   showDialog.value = true
 }
@@ -412,25 +408,18 @@ const editRebanho = async (rebanho: Rebanho) => {
   if (propriedadesOptions.value.length === 0) {
     await loadPropriedades()
   }
-  
-  // Aguardar o próximo tick para garantir que a reatividade seja processada
-  await nextTick()
-  
-  await fillForm(rebanho)
+  fillForm(rebanho)
   dialogMode.value = 'edit'
   showDialog.value = true
 }
 
-const fillForm = async (rebanho: Rebanho) => {
+const fillForm = (rebanho: Rebanho) => {
   form.id = rebanho.id
   form.especie = rebanho.especie
   form.quantidade = rebanho.quantidade.toString()
   form.finalidade = rebanho.finalidade
   form.data_atualizacao = new Date(rebanho.data_atualizacao)
   form.propriedade_id = rebanho.propriedade_id
-  
-  // Aguardar o próximo tick para garantir que a reatividade seja processada
-  await nextTick()
 }
 
 const resetForm = () => {

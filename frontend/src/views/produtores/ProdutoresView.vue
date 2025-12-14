@@ -127,10 +127,106 @@
             <TextInput id="email" label="Email" v-model="form.email" type="email" placeholder="email@exemplo.com"
               :required="true" :disabled="dialogMode === 'view'" :error="errors.email" />
 
-            <!-- Endereço -->
-            <TextareaInput id="endereco" label="Endereço" v-model="form.endereco"
-              placeholder="Endereço completo com CEP" :required="true" :disabled="dialogMode === 'view'"
-              :error="errors.endereco" :rows="3" />
+            <!-- Separador de Endereço -->
+            <div class="form-section-divider">
+              <div class="divider-line"></div>
+              <div class="divider-content">
+                <i class="pi pi-map-marker"></i>
+                <span>Endereço</span>
+              </div>
+              <div class="divider-line"></div>
+            </div>
+
+            <!-- CEP com hint -->
+            <div class="field-with-hint">
+              <TextInput id="cep" label="CEP" v-model="form.cep" placeholder="00000-000"
+                :required="false" :disabled="dialogMode === 'view'" :error="errors.cep" @blur="buscarCep" />
+              <small class="field-hint">
+                <i class="pi pi-info-circle"></i>
+                Digite o CEP e pressione TAB para preencher automaticamente
+              </small>
+            </div>
+
+            <!-- Logradouro e Número (lado a lado) -->
+            <div class="form-row">
+              <div class="form-col-75">
+                <TextInput id="logradouro" label="Logradouro" v-model="form.logradouro" 
+                  placeholder="Rua, Avenida, Estrada, etc." :required="false" :disabled="dialogMode === 'view'" 
+                  :error="errors.logradouro" />
+              </div>
+              <div class="form-col-25">
+                <TextInput id="numero" label="Número" v-model="form.numero" placeholder="Nº"
+                  :required="false" :disabled="dialogMode === 'view'" :error="errors.numero" />
+              </div>
+            </div>
+
+            <!-- Complemento e Bairro (lado a lado) -->
+            <div class="form-row">
+              <div class="form-col-50">
+                <TextInput id="complemento" label="Complemento" v-model="form.complemento" 
+                  placeholder="Apto, Sala, Bloco, Lote" :required="false" :disabled="dialogMode === 'view'" 
+                  :error="errors.complemento" />
+              </div>
+              <div class="form-col-50">
+                <TextInput id="bairro" label="Bairro" v-model="form.bairro" placeholder="Nome do bairro"
+                  :required="false" :disabled="dialogMode === 'view'" :error="errors.bairro" />
+              </div>
+            </div>
+
+            <!-- Cidade e Estado (lado a lado) -->
+            <div class="form-row">
+              <div class="form-col-75">
+                <TextInput id="cidade" label="Cidade" v-model="form.cidade" placeholder="Nome da cidade"
+                  :required="false" :disabled="dialogMode === 'view'" :error="errors.cidade" />
+              </div>
+              <div class="form-col-25">
+                <DropdownInput id="estado" label="Estado (UF)" v-model="form.estado"
+                  :options="estadosBrasil" optionLabel="label" optionValue="value"
+                  placeholder="UF" :required="false" :disabled="dialogMode === 'view'"
+                  :error="errors.estado" />
+              </div>
+            </div>
+
+            <!-- Separador de Documentos -->
+            <div class="form-section-divider">
+              <div class="divider-line"></div>
+              <div class="divider-content">
+                <i class="pi pi-file"></i>
+                <span>Documentos e Informações Complementares</span>
+              </div>
+              <div class="divider-line"></div>
+            </div>
+
+            <!-- Tipo de Pessoa e IE (lado a lado) -->
+            <div class="form-row">
+              <div class="form-col-50">
+                <DropdownInput id="tipo_pessoa" label="Tipo de Pessoa" v-model="form.tipo_pessoa"
+                  :options="tiposPessoa" optionLabel="label" optionValue="value"
+                  placeholder="Selecione o tipo" :required="false" :disabled="dialogMode === 'view'"
+                  :error="errors.tipo_pessoa" />
+              </div>
+              <div class="form-col-50">
+                <TextInput id="inscricao_estadual" label="Inscrição Estadual (IE)" v-model="form.inscricao_estadual"
+                  placeholder="000.000.000.000" :required="false" :disabled="dialogMode === 'view'"
+                  :error="errors.inscricao_estadual" />
+              </div>
+            </div>
+
+            <!-- CAR (Cadastro Ambiental Rural) -->
+            <div class="field-with-hint">
+              <TextInput id="car" label="CAR (Cadastro Ambiental Rural)" v-model="form.car"
+                placeholder="XX-0000000-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" :required="false" :disabled="dialogMode === 'view'"
+                :error="errors.car" />
+              <small class="field-hint">
+                <i class="pi pi-info-circle"></i>
+                Cadastro Ambiental Rural obrigatório para propriedades rurais
+              </small>
+            </div>
+
+            <!-- Observações -->
+            <TextareaInput id="observacoes" label="Observações" v-model="form.observacoes"
+              placeholder="Informações adicionais sobre o produtor (atividades, certificações, etc.)" :required="false" :disabled="dialogMode === 'view'"
+              :error="errors.observacoes" :rows="6" />
           </form>
         </div>
 
@@ -199,7 +295,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import api from '../../services/api'
-import { TextInput, TextareaInput, CustomPagination } from '../../components/forms'
+import { TextInput, TextareaInput, DropdownInput, CustomPagination } from '../../components/forms'
 
 // Interfaces
 interface ProdutorRural {
@@ -208,7 +304,17 @@ interface ProdutorRural {
   cpf_cnpj: string
   telefone: string
   email: string
-  endereco: string
+  cep?: string
+  logradouro?: string
+  numero?: string
+  complemento?: string
+  bairro?: string
+  cidade?: string
+  estado?: string
+  inscricao_estadual?: string
+  car?: string
+  tipo_pessoa?: string
+  observacoes?: string
   data_cadastro: string
   created_at: string
   updated_at: string
@@ -244,6 +350,24 @@ const dialogLoading = ref(false)
 const deleteLoading = ref(false)
 const produtorToDelete = ref<ProdutorRural | null>(null)
 
+// Opções de dropdown
+const tiposPessoa = [
+  { label: 'Pessoa Física', value: 'fisica' },
+  { label: 'Pessoa Jurídica', value: 'juridica' }
+]
+
+const estadosBrasil = [
+  { label: 'AC', value: 'AC' }, { label: 'AL', value: 'AL' }, { label: 'AP', value: 'AP' },
+  { label: 'AM', value: 'AM' }, { label: 'BA', value: 'BA' }, { label: 'CE', value: 'CE' },
+  { label: 'DF', value: 'DF' }, { label: 'ES', value: 'ES' }, { label: 'GO', value: 'GO' },
+  { label: 'MA', value: 'MA' }, { label: 'MT', value: 'MT' }, { label: 'MS', value: 'MS' },
+  { label: 'MG', value: 'MG' }, { label: 'PA', value: 'PA' }, { label: 'PB', value: 'PB' },
+  { label: 'PR', value: 'PR' }, { label: 'PE', value: 'PE' }, { label: 'PI', value: 'PI' },
+  { label: 'RJ', value: 'RJ' }, { label: 'RN', value: 'RN' }, { label: 'RS', value: 'RS' },
+  { label: 'RO', value: 'RO' }, { label: 'RR', value: 'RR' }, { label: 'SC', value: 'SC' },
+  { label: 'SP', value: 'SP' }, { label: 'SE', value: 'SE' }, { label: 'TO', value: 'TO' }
+]
+
 // Form data
 const form = reactive({
   id: null as number | null,
@@ -251,7 +375,17 @@ const form = reactive({
   cpf_cnpj: '',
   telefone: '',
   email: '',
-  endereco: ''
+  cep: '',
+  logradouro: '',
+  numero: '',
+  complemento: '',
+  bairro: '',
+  cidade: '',
+  estado: '',
+  inscricao_estadual: '',
+  car: '',
+  tipo_pessoa: '',
+  observacoes: ''
 })
 
 const errors = reactive({
@@ -259,7 +393,17 @@ const errors = reactive({
   cpf_cnpj: '',
   telefone: '',
   email: '',
-  endereco: ''
+  cep: '',
+  logradouro: '',
+  numero: '',
+  complemento: '',
+  bairro: '',
+  cidade: '',
+  estado: '',
+  inscricao_estadual: '',
+  car: '',
+  tipo_pessoa: '',
+  observacoes: ''
 })
 
 // Debounce function
@@ -366,7 +510,17 @@ const fillForm = (produtor: ProdutorRural) => {
   form.cpf_cnpj = produtor.cpf_cnpj
   form.telefone = produtor.telefone
   form.email = produtor.email
-  form.endereco = produtor.endereco
+  form.cep = produtor.cep || ''
+  form.logradouro = produtor.logradouro || ''
+  form.numero = produtor.numero || ''
+  form.complemento = produtor.complemento || ''
+  form.bairro = produtor.bairro || ''
+  form.cidade = produtor.cidade || ''
+  form.estado = produtor.estado || ''
+  form.inscricao_estadual = produtor.inscricao_estadual || ''
+  form.car = produtor.car || ''
+  form.tipo_pessoa = produtor.tipo_pessoa || ''
+  form.observacoes = produtor.observacoes || ''
 }
 
 const resetForm = () => {
@@ -375,7 +529,17 @@ const resetForm = () => {
   form.cpf_cnpj = ''
   form.telefone = ''
   form.email = ''
-  form.endereco = ''
+  form.cep = ''
+  form.logradouro = ''
+  form.numero = ''
+  form.complemento = ''
+  form.bairro = ''
+  form.cidade = ''
+  form.estado = ''
+  form.inscricao_estadual = ''
+  form.car = ''
+  form.tipo_pessoa = ''
+  form.observacoes = ''
   clearErrors()
 }
 
@@ -384,7 +548,17 @@ const clearErrors = () => {
   errors.cpf_cnpj = ''
   errors.telefone = ''
   errors.email = ''
-  errors.endereco = ''
+  errors.cep = ''
+  errors.logradouro = ''
+  errors.numero = ''
+  errors.complemento = ''
+  errors.bairro = ''
+  errors.cidade = ''
+  errors.estado = ''
+  errors.inscricao_estadual = ''
+  errors.car = ''
+  errors.tipo_pessoa = ''
+  errors.observacoes = ''
 }
 
 const validateForm = () => {
@@ -414,12 +588,41 @@ const validateForm = () => {
     isValid = false
   }
 
-  if (!form.endereco.trim()) {
-    errors.endereco = 'Endereço é obrigatório'
-    isValid = false
-  }
-
   return isValid
+}
+
+// Buscar CEP via ViaCEP API
+const buscarCep = async () => {
+  const cep = form.cep.replace(/\D/g, '')
+  if (cep.length !== 8) return
+
+  try {
+    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
+    const data = await response.json()
+
+    if (!data.erro) {
+      form.logradouro = data.logradouro || ''
+      form.bairro = data.bairro || ''
+      form.cidade = data.localidade || ''
+      form.estado = data.uf || ''
+      
+      toast.add({
+        severity: 'success',
+        summary: 'CEP encontrado',
+        detail: 'Endereço preenchido automaticamente',
+        life: 3000
+      })
+    } else {
+      toast.add({
+        severity: 'warn',
+        summary: 'CEP não encontrado',
+        detail: 'Preencha o endereço manualmente',
+        life: 3000
+      })
+    }
+  } catch (error) {
+    console.error('Erro ao buscar CEP:', error)
+  }
 }
 
 const saveProdutor = async () => {
@@ -433,7 +636,17 @@ const saveProdutor = async () => {
       cpf_cnpj: form.cpf_cnpj,
       telefone: form.telefone,
       email: form.email,
-      endereco: form.endereco
+      cep: form.cep,
+      logradouro: form.logradouro,
+      numero: form.numero,
+      complemento: form.complemento,
+      bairro: form.bairro,
+      cidade: form.cidade,
+      estado: form.estado,
+      inscricao_estadual: form.inscricao_estadual,
+      car: form.car,
+      tipo_pessoa: form.tipo_pessoa,
+      observacoes: form.observacoes
     }
 
     let response
@@ -744,5 +957,113 @@ onMounted(() => {
 
 .p-dialog .grid>div {
   margin-bottom: 1.25rem;
+}
+
+/* Divisor de seção do formulário */
+.form-section-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0 1rem 0;
+  width: 100%;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #d1d5db, transparent);
+}
+
+.divider-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-radius: 20px;
+  color: #16a34a;
+  font-weight: 600;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(22, 163, 74, 0.1);
+}
+
+.divider-content i {
+  font-size: 1rem;
+}
+
+/* Campo com hint */
+.field-with-hint {
+  width: 100%;
+}
+
+.field-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+  padding-left: 0.25rem;
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+.field-hint i {
+  font-size: 0.7rem;
+  color: #16a34a;
+}
+
+/* Layout de linha do formulário */
+.form-row {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+}
+
+.form-col-25 {
+  flex: 0 0 calc(25% - 0.75rem);
+  min-width: 0;
+}
+
+.form-col-35 {
+  flex: 0 0 calc(35% - 0.65rem);
+  min-width: 0;
+}
+
+.form-col-50 {
+  flex: 0 0 calc(50% - 0.5rem);
+  min-width: 0;
+}
+
+.form-col-65 {
+  flex: 0 0 calc(65% - 0.35rem);
+  min-width: 0;
+}
+
+.form-col-75 {
+  flex: 0 0 calc(75% - 0.25rem);
+  min-width: 0;
+}
+
+/* Responsividade para form-row */
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .form-col-25,
+  .form-col-35,
+  .form-col-50,
+  .form-col-65,
+  .form-col-75 {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .divider-content {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+  }
 }
 </style>

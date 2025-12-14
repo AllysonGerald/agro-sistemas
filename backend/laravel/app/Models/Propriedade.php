@@ -15,15 +15,33 @@ class Propriedade extends Model
 
     protected $fillable = [
         'nome',
+        'cep',
+        'logradouro',
+        'numero',
+        'complemento',
+        'bairro',
         'municipio',
         'uf',
         'inscricao_estadual',
+        'car',
+        'matricula',
+        'cartorio',
+        'latitude',
+        'longitude',
         'area_total',
+        'area_preservada',
+        'tipo_exploracao',
+        'data_aquisicao',
+        'observacoes',
         'produtor_id'
     ];
 
     protected $casts = [
         'area_total' => 'decimal:2',
+        'area_preservada' => 'decimal:2',
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8',
+        'data_aquisicao' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

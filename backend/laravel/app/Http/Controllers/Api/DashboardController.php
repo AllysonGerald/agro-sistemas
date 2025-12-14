@@ -3,208 +3,345 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\DashboardResource;
-use App\Services\DashboardService;
-use App\Services\AtividadeService;
+use App\Models\Animal;
+use App\Models\TransacaoFinanceira;
+use App\Models\Estoque;
+use App\Models\Manejo;
+use App\Models\Lote;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
-/**
- * Controller da API do Dashboard
- *
- * Gerencia as requisições da API do dashboard delegando a lógica
- * de negócio para o DashboardService e formatando respostas
- * através do DashboardResource.
- *
- * @package App\Http\Controllers\Api
- * @author Sistema Agropecuário
- * @version 1.0.0
- */
 class DashboardController extends Controller
 {
-    public function __construct(
-        private DashboardService $dashboardService,
-        private AtividadeService $atividadeService
-    ) {}
-
     /**
-     * Exibir dados principais do dashboard
-     *
-     * @group Dashboard API
-     * @response 200 {
-     *   "success": true,
-     *   "message": "Dados do dashboard carregados com sucesso",
-     *   "data": {
-     *     "estatisticas": {},
-     *     "graficos": {},
-     *     "atividades_recentes": [],
-     *     "metricas_periodo": {},
-     *     "meta": {}
-     *   }
-     * }
-     */
-    public function index(): JsonResponse
-    {
-        try {
-            $dados = $this->dashboardService->getDashboardData();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Dados do dashboard carregados com sucesso',
-                'data' => new DashboardResource($dados)
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro ao carregar dados do dashboard',
-                'error' => config('app.debug') ? $e->getMessage() : 'Erro interno do servidor'
-            ], 500);
-        }
-    }
-
-    /**
-     * Obter apenas estatísticas
-     *
-     * @group Dashboard API
-     * @response 200 {
-     *   "success": true,
-     *   "data": {
-     *     "total_produtores": {"valor": 25, "crescimento": 12.5},
-     *     "total_propriedades": {"valor": 40, "crescimento": 8.3},
-     *     "total_unidades_producao": {"valor": 85, "crescimento": -2.1},
-     *     "total_animais": {"valor": 32, "crescimento": 15.7}
-     *   }
-     * }
+     * Retorna estatísticas gerais do dashboard
      */
     public function estatisticas(): JsonResponse
     {
         try {
-            $estatisticas = $this->dashboardService->obterEstatisticas();
+            // Animais
+            $totalAnimais = Animal::count();
+            $animaisAtivos = Animal::where('situacao', 'ativo')->count();
+            $animaisMesPassado = Animal::where('created_at', '>=', Carbon::now()->subMonth())->count();
+            $variacaoAnimais = $animaisMesPassado > 0 ? round(($animaisMesPassado / $totalAnimais) * 100, 1) : 0;
+
+            // Financeiro
+            $receitas = TransacaoFinanceira::where('tipo', 'receita')
+                ->whereMonth('data', Carbon::now()->month)
+                ->sum('valor');
+
+            $despesas = TransacaoFinanceira::where('tipo', 'despesa')
+                ->whereMonth('data', Carbon::now()->month)
+                ->sum('valor');
+
+            $saldo = $receitas - $despesas;
+
+            $receitasMesPassado = TransacaoFinanceira::where('tipo', 'receita')
+                ->whereMonth('data', Carbon::now()->subMonth()->month)
+                ->sum('valor');
+
+            $despesasMesPassado = TransacaoFinanceira::where('tipo', 'despesa')
+                ->whereMonth('data', Carbon::now()->subMonth()->month)
+                ->sum('valor');
+
+            $saldoMesPassado = $receitasMesPassado - $despesasMesPassado;
+            $variacaoFinanceiro = $saldoMesPassado != 0
+                ? round((($saldo - $saldoMesPassado) / abs($saldoMesPassado)) * 100, 1)
+                : 0;
+
+            // Estoque
+            $itensEstoque = Estoque::count();
+            $estoqueBaixo = Estoque::whereRaw('quantidade <= quantidade_minima')->count();
+
+            // Atividades
+            $atividadesMes = Manejo::whereMonth('data', Carbon::now()->month)->count();
+            $atividades24h = Manejo::where('data', '>=', Carbon::now()->subDay())->count();
 
             return response()->json([
                 'success' => true,
-                'data' => $estatisticas
+                'data' => [
+                    'total_animais' => $totalAnimais,
+                    'variacao_animais' => $variacaoAnimais,
+                    'saldo_financeiro' => $saldo,
+                    'variacao_financeiro' => $variacaoFinanceiro,
+                    'itens_estoque' => $itensEstoque,
+                    'estoque_baixo' => $estoqueBaixo,
+                    'atividades_mes' => $atividadesMes,
+                    'ultimas_24h' => $atividades24h,
+                ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Erro ao carregar estatísticas',
-                'error' => config('app.debug') ? $e->getMessage() : 'Erro interno do servidor'
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Obter dados para gráficos
-     *
-     * @group Dashboard API
-     * @response 200 {
-     *   "success": true,
-     *   "data": {
-     *     "producao_mensal": [],
-     *     "distribuicao_propriedades": [],
-     *     "evolucao_rebanho": [],
-     *     "tipos_producao": []
-     *   }
-     * }
+     * Retorna dados para gráfico de evolução do rebanho
      */
-    public function graficos(): JsonResponse
+    public function graficoEvolucao(): JsonResponse
     {
         try {
-            $graficos = $this->dashboardService->obterDadosGraficos();
+            $labels = [];
+            $valores = [];
+
+            // Últimos 6 meses
+            for ($i = 5; $i >= 0; $i--) {
+                $mes = Carbon::now()->subMonths($i);
+                $labels[] = ucfirst($mes->locale('pt_BR')->isoFormat('MMM/YY'));
+
+                $total = Animal::where('created_at', '<=', $mes->endOfMonth())
+                    ->whereIn('situacao', ['ativo', 'vendido', 'transferido'])
+                    ->count();
+
+                $valores[] = $total;
+            }
 
             return response()->json([
                 'success' => true,
-                'data' => $graficos
+                'data' => [
+                    'labels' => $labels,
+                    'valores' => $valores
+                ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao carregar dados dos gráficos',
-                'error' => config('app.debug') ? $e->getMessage() : 'Erro interno do servidor'
+                'message' => 'Erro ao carregar gráfico de evolução',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Obter atividades recentes
-     *
-     * @group Dashboard API
-     * @response 200 {
-     *   "success": true,
-     *   "data": [
-     *     {
-     *       "tipo": "produtor",
-     *       "descricao": "Novo produtor cadastrado",
-     *       "data": "2024-10-16T10:30:00Z",
-     *       "icone": "fas fa-user-plus",
-     *       "cor": "success"
-     *     }
-     *   ]
-     * }
+     * Retorna dados para gráfico financeiro
      */
-    public function atividades(): JsonResponse
+    public function graficoFinanceiro(): JsonResponse
     {
         try {
-            $atividades = $this->atividadeService->obterRecentes(10);
+            $labels = [];
+            $receitas = [];
+            $despesas = [];
+
+            // Últimos 6 meses
+            for ($i = 5; $i >= 0; $i--) {
+                $mes = Carbon::now()->subMonths($i);
+                $labels[] = ucfirst($mes->locale('pt_BR')->isoFormat('MMM/YY'));
+
+                $receitasMes = TransacaoFinanceira::where('tipo', 'receita')
+                    ->whereYear('data', $mes->year)
+                    ->whereMonth('data', $mes->month)
+                    ->sum('valor');
+
+                $despesasMes = TransacaoFinanceira::where('tipo', 'despesa')
+                    ->whereYear('data', $mes->year)
+                    ->whereMonth('data', $mes->month)
+                    ->sum('valor');
+
+                $receitas[] = (float) $receitasMes;
+                $despesas[] = (float) $despesasMes;
+            }
 
             return response()->json([
                 'success' => true,
-                'data' => $atividades
+                'data' => [
+                    'labels' => $labels,
+                    'receitas' => $receitas,
+                    'despesas' => $despesas
+                ]
             ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao carregar gráfico financeiro',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
+    /**
+     * Retorna distribuições para gráficos de pizza
+     */
+    public function distribuicoes(): JsonResponse
+    {
+        try {
+            // Animais por situação
+            $situacao = [
+                'ativo' => Animal::where('situacao', 'ativo')->count(),
+                'vendido' => Animal::where('situacao', 'vendido')->count(),
+                'transferido' => Animal::where('situacao', 'transferido')->count(),
+            ];
+
+            // Estoque por categoria
+            $estoque = [
+                'racao' => Estoque::where('categoria', 'racao')->count(),
+                'medicamento' => Estoque::where('categoria', 'medicamento')->count(),
+                'vacina' => Estoque::where('categoria', 'vacina')->count(),
+                'suplemento' => Estoque::where('categoria', 'suplemento')->count(),
+                'outros' => Estoque::whereIn('categoria', ['equipamento', 'outro', 'vermifugo'])->count(),
+            ];
+
+            // Atividades por tipo
+            $atividades = [
+                'pesagem' => Manejo::where('tipo', 'pesagem')
+                    ->whereMonth('data', Carbon::now()->month)
+                    ->count(),
+                'vacinacao' => Manejo::where('tipo', 'vacinacao')
+                    ->whereMonth('data', Carbon::now()->month)
+                    ->count(),
+                'tratamento' => Manejo::whereIn('tipo', ['curativo', 'exame'])
+                    ->whereMonth('data', Carbon::now()->month)
+                    ->count(),
+                'outros' => Manejo::whereIn('tipo', ['vermifugacao', 'castracao', 'descorna', 'marcacao', 'transferencia', 'outro'])
+                    ->whereMonth('data', Carbon::now()->month)
+                    ->count(),
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'situacao' => $situacao,
+                    'estoque' => $estoque,
+                    'atividades' => $atividades
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao carregar distribuições',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Retorna atividades recentes
+     */
+    public function atividadesRecentes(): JsonResponse
+    {
+        try {
+            $manejos = Manejo::with(['animal', 'propriedade'])
+                ->orderBy('data', 'desc')
+                ->limit(10)
+                ->get()
+                ->map(function ($manejo) {
+                    $descricao = $this->formatarDescricaoManejo($manejo);
+
+                    return [
+                        'id' => $manejo->id,
+                        'tipo' => 'manejo',
+                        'descricao' => $descricao,
+                        'data_relativa' => $this->getDataRelativa($manejo->data),
+                    ];
+                });
+
+            $animais = Animal::with('propriedade')
+                ->orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get()
+                ->map(function ($animal) {
+                    return [
+                        'id' => $animal->id,
+                        'tipo' => 'animal',
+                        'descricao' => "Animal {$animal->identificacao} cadastrado",
+                        'data_relativa' => $this->getDataRelativa($animal->created_at),
+                    ];
+                });
+
+            $transacoes = TransacaoFinanceira::with('categoria')
+                ->orderBy('data', 'desc')
+                ->limit(5)
+                ->get()
+                ->map(function ($transacao) {
+                    $tipo = $transacao->tipo === 'receita' ? 'Receita' : 'Despesa';
+                    return [
+                        'id' => $transacao->id,
+                        'tipo' => 'financeiro',
+                        'descricao' => "{$tipo} de R$ " . number_format($transacao->valor, 2, ',', '.'),
+                        'data_relativa' => $this->getDataRelativa($transacao->data),
+                    ];
+                });
+
+            // Mesclar e ordenar todas as atividades
+            $todas = collect([])
+                ->merge($manejos)
+                ->merge($animais)
+                ->merge($transacoes)
+                ->sortByDesc(function ($atividade) {
+                    return $atividade['data_relativa'];
+                })
+                ->take(10)
+                ->values();
+
+            return response()->json([
+                'success' => true,
+                'data' => $todas
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Erro ao carregar atividades recentes',
-                'error' => config('app.debug') ? $e->getMessage() : 'Erro interno do servidor'
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Obter métricas do período
-     *
-     * @group Dashboard API
-     * @response 200 {
-     *   "success": true,
-     *   "data": {
-     *     "periodo_atual": {
-     *       "inicio": "2024-10-01",
-     *       "fim": "2024-10-31",
-     *       "total_registros": 25
-     *     },
-     *     "periodo_anterior": {
-     *       "inicio": "2024-09-01",
-     *       "fim": "2024-09-30",
-     *       "total_registros": 20
-     *     },
-     *     "comparacao": {
-     *       "crescimento_absoluto": 5,
-     *       "crescimento_percentual": 25.0
-     *     }
-     *   }
-     * }
+     * Formata a descrição do manejo
      */
-    public function metricas(): JsonResponse
+    private function formatarDescricaoManejo($manejo): string
     {
-        try {
-            $metricas = $this->dashboardService->obterMetricasPeriodo();
+        $tipo = match($manejo->tipo) {
+            'pesagem' => 'Pesagem',
+            'vacinacao' => 'Vacinação',
+            'vermifugacao' => 'Vermifugação',
+            'curativo' => 'Curativo',
+            'castracao' => 'Castração',
+            'descorna' => 'Descorna',
+            'marcacao' => 'Marcação',
+            'transferencia' => 'Transferência',
+            'exame' => 'Exame',
+            default => 'Atividade'
+        };
 
-            return response()->json([
-                'success' => true,
-                'data' => $metricas
-            ]);
+        $alvo = $manejo->animal
+            ? "animal {$manejo->animal->identificacao}"
+            : "";
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro ao carregar métricas do período',
-                'error' => config('app.debug') ? $e->getMessage() : 'Erro interno do servidor'
-            ], 500);
+        return $alvo ? "{$tipo} realizada em {$alvo}" : "{$tipo} realizada";
+    }
+
+    /**
+     * Retorna data relativa (ex: "há 2 horas")
+     */
+    private function getDataRelativa($data): string
+    {
+        $carbon = Carbon::parse($data);
+        $diff = $carbon->diffForHumans();
+
+        // Traduzir para português
+        $traducoes = [
+            'seconds ago' => 'segundos atrás',
+            'minute ago' => 'minuto atrás',
+            'minutes ago' => 'minutos atrás',
+            'hour ago' => 'hora atrás',
+            'hours ago' => 'horas atrás',
+            'day ago' => 'dia atrás',
+            'days ago' => 'dias atrás',
+            'week ago' => 'semana atrás',
+            'weeks ago' => 'semanas atrás',
+            'month ago' => 'mês atrás',
+            'months ago' => 'meses atrás',
+        ];
+
+        foreach ($traducoes as $en => $pt) {
+            $diff = str_replace($en, $pt, $diff);
         }
+
+        return $diff;
     }
 }

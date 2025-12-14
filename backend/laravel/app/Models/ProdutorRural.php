@@ -19,7 +19,17 @@ class ProdutorRural extends Model
         'cpf_cnpj',
         'telefone',
         'email',
-        'endereco',
+        'cep',
+        'logradouro',
+        'numero',
+        'complemento',
+        'bairro',
+        'cidade',
+        'estado',
+        'inscricao_estadual',
+        'car',
+        'tipo_pessoa',
+        'observacoes',
         'data_cadastro'
     ];
 

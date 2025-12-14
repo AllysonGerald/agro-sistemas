@@ -292,7 +292,9 @@ const handleRegister = async () => {
         errors.value.password = ['A senha deve atender a pelo menos 3 critérios de segurança']
         loading.value = false
         return
-    } try {
+    }
+    
+    try {
         const result = await authStore.register(form)
 
         if (result.success) {

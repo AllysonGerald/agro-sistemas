@@ -15,6 +15,7 @@ import Menu from 'primevue/menu'
 import Menubar from 'primevue/menubar'
 import Toast from 'primevue/toast'
 import ToastService from 'primevue/toastservice'
+import Tooltip from 'primevue/tooltip'
 import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
@@ -53,6 +54,9 @@ app.use(PrimeVue, {
   }
 })
 app.use(ToastService)
+
+// Register PrimeVue directives
+app.directive('tooltip', Tooltip)
 
 // Register PrimeVue components globally
 app.component('Button', Button)
