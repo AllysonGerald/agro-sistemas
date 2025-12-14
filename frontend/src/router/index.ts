@@ -179,18 +179,6 @@ const router = createRouter({
       ]
     },
     {
-      path: '/relatorios',
-      component: () => import('@/layouts/AppLayout.vue'),
-      meta: { requiresAuth: true },
-      children: [
-        {
-          path: '',
-          name: 'Relatorios',
-          component: () => import('@/views/relatorios/RelatoriosView.vue')
-        }
-      ]
-    },
-    {
       path: '/configuracoes',
       component: () => import('@/layouts/AppLayout.vue'),
       meta: { requiresAuth: true },
