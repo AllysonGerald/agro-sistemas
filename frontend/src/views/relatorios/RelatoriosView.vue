@@ -1,9 +1,9 @@
 <template>
   <div class="relatorios-container">
     <!-- Header -->
-    <div class="card">
-      <h2 class="text-2xl font-semibold text-900 m-0 mb-2">Relatórios e Exportações</h2>
-      <p class="text-600 mt-0 mb-0">Gere relatórios e exporte dados do sistema agropecuário</p>
+    <div class="page-header">
+      <h2 class="page-title">Relatórios e Exportações</h2>
+      <p class="page-subtitle">Gere relatórios e exporte dados do sistema agropecuário</p>
     </div>
 
     <!-- Filtros de Relatórios -->
@@ -344,28 +344,45 @@ onMounted(() => {
 
 <style scoped>
 .relatorios-container {
-  padding: 1.5rem;
-  background: #f8fafc;
-  min-height: 100vh;
+  padding: 2rem;
+  background: #f5f7fa;
+  min-height: calc(100vh - 80px);
 }
 
-.card {
+.page-header {
   background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  margin-bottom: 1.5rem;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
 }
 
-h2,
-h3 {
+.page-title {
+  font-size: 1.875rem;
+  font-weight: 700;
   color: #1e293b;
   margin: 0 0 0.5rem 0;
 }
 
-p {
+.page-subtitle {
+  font-size: 1rem;
   color: #64748b;
   margin: 0;
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 1.5rem 0;
 }
 
 /* Filtros */
@@ -416,22 +433,25 @@ p {
 /* Grid de Relatórios */
 .relatorios-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
 }
 
 .relatorio-card {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
   border-radius: 16px;
-  padding: 2rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  min-height: 280px;
 }
 
 .relatorio-card:hover {
-  border-color: #16a34a;
-  box-shadow: 0 12px 32px rgba(22, 163, 74, 0.12);
+  border-color: #10b981;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);
   transform: translateY(-4px);
 }
 
@@ -440,28 +460,29 @@ p {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   gap: 1rem;
+  flex-grow: 1;
 }
 
 .relatorio-icon-container {
-  width: 72px;
-  height: 72px;
-  border-radius: 16px;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: transform 0.3s;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .relatorio-card:hover .relatorio-icon-container {
-  transform: scale(1.1) rotate(5deg);
+  transform: scale(1.08);
 }
 
 .relatorio-icon-container i {
-  font-size: 2rem;
+  font-size: 1.75rem;
 }
 
 .relatorio-info {
@@ -469,32 +490,40 @@ p {
 }
 
 .relatorio-nome {
-  font-size: 1.125rem;
+  font-size: 1.0625rem;
   font-weight: 700;
   color: #1e293b;
-  margin: 0 0 0.75rem 0;
-  line-height: 1.3;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.4;
 }
 
 .relatorio-desc {
   font-size: 0.875rem;
   color: #64748b;
-  line-height: 1.6;
+  line-height: 1.5;
+  margin: 0;
 }
 
 .relatorio-acoes {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.625rem;
   margin-top: auto;
+  padding-top: 0.5rem;
 }
 
 .relatorio-acoes button {
   width: 100%;
   font-weight: 600;
-  padding: 0.75rem 1rem;
+  padding: 0.625rem 1rem;
   font-size: 0.875rem;
-  border-radius: 8px;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.relatorio-acoes button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Loading */
@@ -540,9 +569,29 @@ p {
     grid-column: 1 / -1;
     padding-top: 0;
   }
+
+  .relatorios-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
 }
 
 @media (max-width: 768px) {
+  .relatorios-container {
+    padding: 1rem;
+  }
+
+  .page-header {
+    padding: 1.5rem;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .card {
+    padding: 1.5rem;
+  }
+
   .filtros-grid {
     grid-template-columns: 1fr;
   }
@@ -558,6 +607,11 @@ p {
 
   .relatorios-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .relatorio-card {
+    min-height: auto;
   }
 }
 </style>
