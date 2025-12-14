@@ -344,12 +344,17 @@ const handlePasswordResetSent = () => {
   color: #10b981;
   font-size: 0.8125rem;
   text-decoration: none;
-  transition: all 0.2s;
+  transition: color 0.2s;
   font-weight: 600;
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
 }
 
 .forgot-password-link:hover {
   color: #047857;
+  background: transparent !important;
+  text-decoration: none;
 }
 
 /* FOOTER DO CARD */
@@ -382,27 +387,38 @@ const handlePasswordResetSent = () => {
   color: #10b981;
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.2s;
+  transition: color 0.2s;
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
 }
 
 .register-link:hover {
   color: #047857;
+  background: transparent !important;
+  text-decoration: none;
 }
 
 .back-to-home-link {
   color: #6b7280;
   font-size: 0.875rem;
   text-decoration: none;
-  transition: all 0.2s;
+  transition: color 0.2s;
   font-weight: 500;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.375rem;
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
 }
 
 .back-to-home-link:hover {
   color: #10b981;
+  background: transparent !important;
+  text-decoration: none;
 }
 
 /* Responsividade */
